@@ -13,3 +13,9 @@ python3 setup.py install
 
 _**NOTE:** You may need to prefix `sudo` to install at system level or add `--user` flag to install for the executing user._
 
+## Usage
+```
+import alsavol
+
+alsavol.set_master_volume(80)
+```
