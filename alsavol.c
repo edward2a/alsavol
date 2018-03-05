@@ -78,7 +78,11 @@ static PyObject * get_master_volume(PyObject *self, PyObject *args)
   snd_mixer_close(handle);
 
   // Note the '+ 1' is to round up as the long truncates the number
-  return PyLong_FromLong(volume * 100 / max + 1);
+  if (volume == max || volume == min) {
+    return PyLong_FromLong(volume * 100 / max);
+  } else {
+    return PyLong_FromLong(volume * 100 / max + 1);
+  }
 }
 
 // Define a module specific exception
