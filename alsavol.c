@@ -52,12 +52,42 @@ static PyObject * set_master_volume(PyObject *self, PyObject *args)
   return Py_True;
 }
 
+static PyObject * get_master_volume(PyObject *self, PyObject *args)
+{
+  long min, max, volume;
+  snd_mixer_t *handle;
+  snd_mixer_selem_id_t *sid;
+  const char *card = "default";
+  const char *selem_name = "Master";
+  const int channel = SND_MIXER_SCHN_MONO;
+  //snd_mixer_selem_channel_id_t *channel;
+
+  snd_mixer_open(&handle, 0);
+  snd_mixer_attach(handle, card);
+  snd_mixer_selem_register(handle, NULL, NULL);
+  snd_mixer_load(handle);
+
+  snd_mixer_selem_id_alloca(&sid);
+  snd_mixer_selem_id_set_index(sid, 0);
+  snd_mixer_selem_id_set_name(sid, selem_name);
+  snd_mixer_elem_t* elem = snd_mixer_find_selem(handle, sid);
+
+  snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
+  snd_mixer_selem_get_playback_volume(elem, channel, &volume);
+
+  snd_mixer_close(handle);
+
+  // Note the '+ 1' is to round up as the long truncates the number
+  return PyLong_FromLong(volume * 100 / max + 1);
+}
+
 // Define a module specific exception
 static PyObject *AlsaVolError;
 
 // Module initialization
 static PyMethodDef AlsaVolMethods[] = {
   {"set_master_volume", set_master_volume, METH_VARARGS, "Set ALSA master channel volume."},
+  {"get_master_volume", get_master_volume, METH_VARARGS, "Get ALSA master channel volume."},
   {NULL, NULL, 0, NULL}   /* Sentinel */
 };
 
